@@ -1,7 +1,8 @@
 ## display
 - [x] canvas size (`display.getEyeParameters('left').renderWidth`)
 - [x] render webGL to both eyes
-- [ ] two cameras with proper eye offset and field of views
+- [x] render 2 camera matricies
+- [ ] us display info to build camera matrix (FOV, position, rotation, etc.)
 - [ ] proper vr animation frame updating
 - [ ] use head/controller input positions
 - [ ] sync matcap shader

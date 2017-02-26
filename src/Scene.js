@@ -244,15 +244,21 @@ class Scene {
 
   applyRender() {
     this._preventRender = false;
-    this.updateMatricesAndSort();
+    
 
     var gl = this._gl;
     if (!gl) return;
 
     if (this._drawFullScene) {
-      
-      this._drawScene(WEBVR.eyedims[0], 0, WEBVR.eyedims[0], WEBVR.eyedims[1], true);
-      this._drawScene(0, 0, WEBVR.eyedims[0], WEBVR.eyedims[1], false);
+      var w = WEBVR.eyedims[0];
+      var h = WEBVR.eyedims[1];
+      WEBVR.updateEye(1);
+      this.updateMatricesAndSort();
+      this._drawScene(0, 0, w, h, true);
+      WEBVR.updateEye(-1);
+      this.updateMatricesAndSort();
+      this._drawScene(w, 0, w, h, false);
+      this._gl.viewport(0,0,w*2, h);
     }
 
     gl.disable(gl.DEPTH_TEST);
@@ -268,7 +274,7 @@ class Scene {
     gl.enable(gl.DEPTH_TEST);
 
     this._sculptManager.postRender(); // draw sculpting gizmo stuffs
-  }
+  } 
 
   _drawScene(x, y, w, h, clear) {
     this._gl.viewport(x, y, w, h);
@@ -295,7 +301,7 @@ class Scene {
     ///////////////
     gl.bindFramebuffer(gl.FRAMEBUFFER, this._rttOpaque.getFramebuffer());
     if (clear) gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
+    
     // grid
     if (this._showGrid) this._grid.render(this);
 
@@ -448,11 +454,11 @@ class Scene {
     this._canvas.height = newHeight;
 
     this._gl.viewport(0, 0, newWidth*2, newHeight);
-    this._camera.onResize(newWidth*2, newHeight);
+    this._camera.onResize(newWidth, newHeight);
     this._background.onResize(newWidth*2, newHeight);
 
     this._rttContour.onResize(newWidth*2, newHeight);
-    this._rttMerge.onResize(newWidth, newHeight);
+    this._rttMerge.onResize(newWidth*2, newHeight);
     this._rttOpaque.onResize(newWidth*2, newHeight);
     this._rttTransparent.onResize(newWidth*2, newHeight);
 

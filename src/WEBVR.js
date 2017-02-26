@@ -14,7 +14,9 @@ var v3plus = function(A, B){
 var WEBVR = {
 	displays: null,
 	display: null,
-	eyedims: [1,1],
+	eyeparams: null,
+	eyedims: [1512,1680],
+	eyeoffset: 3,
 	layer: null,
 
 	init: function () {
@@ -25,31 +27,71 @@ var WEBVR = {
 		console.log(this);
 		this.displays = displays;
 		this.display = displays[0];
-		var eyeparams = this.display.getEyeParameters('left')
-		this.eyedims = [eyeparams.renderWidth, eyeparams.renderHeight]
-		console.log(this.eyedims);
+		var eyeparams = this.display.getEyeParameters('left');
+		this.eyeparams = eyeparams;
+		this.eyedims = [eyeparams.renderWidth, eyeparams.renderHeight];
+		this.eyeoffset = eyeparams.offset;
 		window.Scene.onCanvasResize();
-		this.layer = {leftBounds:[0.0, 0.0, 0.5, 1.0],rightBounds:[0.5, 0.0, 1.0, 1.0]};
+		this.layer = {leftBounds:[0.0, 0.0, 0.5, 1.0],rightBounds:[0.5, 0.0, 0.5, 1.0]};
 		this.layer.source = document.getElementById("canvas");
 		document.body.appendChild(this.getButton());
 		this.display.requestAnimationFrame(this.update.bind(this));
-	},
+		window.pose = {position: [0, 0, 0.5], orientation:[ 0, 0, 0, 1 ]}
 
+	},
+	updateEye: function(n){
+		if (window['pose'] && window['pose']['position']) {
+			Scene._camera._usePivot = false;
+			Scene._camera._quatRot = pose.orientation;
+			Scene._camera._proj = 
+				this.makeProjectionMatrix(this.display, this.eyeparams);
+			Scene._camera.setTrans(v3plus(
+				v3mult(pose.position, 200), 
+				//[0-((WEBVR.eyeoffset[n+1]|3)*20),10,100]
+				[-((n+1)*6), -10, 150]
+				));
+		}
+	},
 	update: function(delta){
 		this.display.requestAnimationFrame(this.update.bind(this));
 		if (this.display.isPresenting) {
 			var frameData = new VRFrameData();
         	this.display.getFrameData(frameData);
-			//console.log(frameData.pose.position);
 			window.pose = frameData.pose;
-			if (pose.position) {
-				Scene._camera._trans = v3plus(v3mult(frameData.pose.position, 200), [0,-20,50]);
-			}
-			Scene._camera.updateView();
 			Scene.render();
-			this.display.submitFrame(this.display.getPose());
+			this.display.submitFrame(pose);
 		}
-		
+	},
+	makeProjectionMatrix: function (display, eye) {
+	  var d2r = Math.PI / 180.0;
+	  var upTan = Math.tan(eye.fieldOfView.upDegrees * d2r);
+	  var downTan = Math.tan(eye.fieldOfView.leftDegrees * d2r);
+	  var rightTan = Math.tan(eye.fieldOfView.rightDegrees * d2r);
+	  var leftTan = Math.tan(eye.fieldOfView.leftDegrees * d2r);
+	  var xScale = 2.0 / (leftTan + rightTan);
+	  var yScale = 2.0 / (upTan + downTan);
+
+	  var out = new Float32Array(16);
+	  out[0] = xScale;
+	  out[1] = 0.0;
+	  out[2] = 0.0;
+	  out[3] = 0.0;
+	  
+	  out[4] = 0.0;
+	  out[5] = yScale;
+	  out[6] = 0.0;
+	  out[7] = 0.0;
+	  
+	  out[8] = -((leftTan - rightTan) * xScale * 0.5);
+	  out[9] = (upTan - downTan) * yScale * 0.5;
+	  out[10] = -(display.depthNear + display.depthFar) / (display.depthFar - display.depthNear);
+
+	  out[12] = 0.0;
+	  out[13] = 0.0;
+	  out[14] = -(2.0 * display.depthFar * display.depthNear) / (display.depthFar - display.depthNear);
+	  out[15] = 0.0;
+
+	  return out;
 	},
 
 	isLatestAvailable: function () {
