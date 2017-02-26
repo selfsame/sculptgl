@@ -25,6 +25,7 @@ class Scene {
 
   constructor() {
     window.Scene = this;
+    WEBVR.init();
     this._gl = null; // webgl context
 
     // cache canvas stuffs
@@ -248,7 +249,11 @@ class Scene {
     var gl = this._gl;
     if (!gl) return;
 
-    if (this._drawFullScene) this._drawScene();
+    if (this._drawFullScene) {
+      
+      this._drawScene(WEBVR.eyedims[0], 0, WEBVR.eyedims[0], WEBVR.eyedims[1], true);
+      this._drawScene(0, 0, WEBVR.eyedims[0], WEBVR.eyedims[1], false);
+    }
 
     gl.disable(gl.DEPTH_TEST);
 
@@ -265,7 +270,8 @@ class Scene {
     this._sculptManager.postRender(); // draw sculpting gizmo stuffs
   }
 
-  _drawScene() {
+  _drawScene(x, y, w, h, clear) {
+    this._gl.viewport(x, y, w, h);
     var gl = this._gl;
     var i = 0;
     var meshes = this._meshes;
@@ -278,7 +284,7 @@ class Scene {
     var showContour = this._selectMeshes.length > 0 && this._showContour && ShaderLib[Enums.Shader.CONTOUR].color[3] > 0.0;
     if (showContour) {
       gl.bindFramebuffer(gl.FRAMEBUFFER, this._rttContour.getFramebuffer());
-      gl.clear(gl.COLOR_BUFFER_BIT);
+      if (clear) gl.clear(gl.COLOR_BUFFER_BIT);
       for (var s = 0, sel = this._selectMeshes, nbSel = sel.length; s < nbSel; ++s)
         sel[s].renderFlatColor(this);
     }
@@ -288,7 +294,7 @@ class Scene {
     // OPAQUE PASS
     ///////////////
     gl.bindFramebuffer(gl.FRAMEBUFFER, this._rttOpaque.getFramebuffer());
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    if (clear) gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     // grid
     if (this._showGrid) this._grid.render(this);
@@ -308,7 +314,7 @@ class Scene {
     // TRANSPARENT PASS
     ///////////////
     gl.bindFramebuffer(gl.FRAMEBUFFER, this._rttTransparent.getFramebuffer());
-    gl.clear(gl.COLOR_BUFFER_BIT);
+    if (clear) gl.clear(gl.COLOR_BUFFER_BIT);
 
     gl.enable(gl.BLEND);
 
@@ -430,25 +436,25 @@ class Scene {
   /** Called when the window is resized */
   onCanvasResize() {
     var viewport = this._viewport;
-    var newWidth = WEBVR.eyedims[0] * 2 * this._pixelRatio;
+    var newWidth = WEBVR.eyedims[0] * this._pixelRatio;
     var newHeight = WEBVR.eyedims[1] * this._pixelRatio;
 
     this._canvasOffsetLeft = viewport.offsetLeft;
     this._canvasOffsetTop = viewport.offsetTop;
-    this._canvasWidth = newWidth;
+    this._canvasWidth = newWidth*2;
     this._canvasHeight = newHeight;
 
-    this._canvas.width = newWidth;
+    this._canvas.width = newWidth*2;
     this._canvas.height = newHeight;
 
-    this._gl.viewport(0, 0, newWidth, newHeight);
-    this._camera.onResize(newWidth, newHeight);
-    this._background.onResize(newWidth, newHeight);
+    this._gl.viewport(0, 0, newWidth*2, newHeight);
+    this._camera.onResize(newWidth*2, newHeight);
+    this._background.onResize(newWidth*2, newHeight);
 
-    this._rttContour.onResize(newWidth, newHeight);
+    this._rttContour.onResize(newWidth*2, newHeight);
     this._rttMerge.onResize(newWidth, newHeight);
-    this._rttOpaque.onResize(newWidth, newHeight);
-    this._rttTransparent.onResize(newWidth, newHeight);
+    this._rttOpaque.onResize(newWidth*2, newHeight);
+    this._rttTransparent.onResize(newWidth*2, newHeight);
 
     this.render();
   }

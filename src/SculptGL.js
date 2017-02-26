@@ -16,7 +16,7 @@ var MOUSE_RIGHT = 3;
  
 window.WEBVR = WEBVR;
 window.VREffect = VREffect;
-WEBVR.init();
+
 
 // Manage events
 class SculptGL extends Scene {

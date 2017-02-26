@@ -61,7 +61,6 @@ class Rtt {
 
   onResize(width, height) {
     var gl = this._gl;
-
     this._invSize[0] = 1.0 / width;
     this._invSize[1] = 1.0 / height;
 
