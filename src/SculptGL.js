@@ -5,12 +5,18 @@ import Enums from './misc/Enums';
 import Utils from './misc/Utils';
 import Scene from './Scene';
 import Multimesh from './mesh/multiresolution/Multimesh';
+import WEBVR from "./WEBVR";
+import VREffect from "./VREffect";
 
 var vec3 = glm.vec3;
 
 var MOUSE_LEFT = 1;
 var MOUSE_MIDDLE = 2;
 var MOUSE_RIGHT = 3;
+ 
+window.WEBVR = WEBVR;
+window.VREffect = VREffect;
+WEBVR.init();
 
 // Manage events
 class SculptGL extends Scene {

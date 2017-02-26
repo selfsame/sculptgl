@@ -24,6 +24,7 @@ var mat4 = glm.mat4;
 class Scene {
 
   constructor() {
+    window.Scene = this;
     this._gl = null; // webgl context
 
     // cache canvas stuffs
@@ -429,8 +430,8 @@ class Scene {
   /** Called when the window is resized */
   onCanvasResize() {
     var viewport = this._viewport;
-    var newWidth = viewport.clientWidth * this._pixelRatio;
-    var newHeight = viewport.clientHeight * this._pixelRatio;
+    var newWidth = WEBVR.eyedims[0] * 2 * this._pixelRatio;
+    var newHeight = WEBVR.eyedims[1] * this._pixelRatio;
 
     this._canvasOffsetLeft = viewport.offsetLeft;
     this._canvasOffsetTop = viewport.offsetTop;
