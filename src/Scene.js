@@ -252,10 +252,10 @@ class Scene {
     if (this._drawFullScene) {
       var w = WEBVR.eyedims[0];
       var h = WEBVR.eyedims[1];
-      WEBVR.updateEye(1);
+      WEBVR.updateEye(-1);
       this.updateMatricesAndSort();
       this._drawScene(0, 0, w, h, true);
-      WEBVR.updateEye(-1);
+      WEBVR.updateEye(1);
       this.updateMatricesAndSort();
       this._drawScene(w, 0, w, h, false);
       this._gl.viewport(0,0,w*2, h);

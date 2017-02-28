@@ -232,9 +232,9 @@ class Camera {
     this._rotX = Math.max(Math.min(rx, radLimit), -radLimit);
     this._rotY = ry;
     var qrt = this._quatRot;
-    quat.identity(qrt);
-    quat.rotateX(qrt, qrt, this._rotX);
-    quat.rotateY(qrt, qrt, this._rotY);
+    //quat.identity(qrt);
+    //quat.rotateX(qrt, qrt, this._rotX);
+    //quat.rotateY(qrt, qrt, this._rotY);
   }
 
   getTransZ() {
@@ -271,9 +271,9 @@ class Camera {
 
   updateProjection() {
     if (this._projectionType === Enums.Projection.PERSPECTIVE) {
-      mat4.perspective(this._proj, this._fov * Math.PI / 180.0, this._width / this._height, this._near, this._far);
-      this._proj[10] = -1.0;
-      this._proj[14] = -2 * this._near;
+      // mat4.perspective(this._proj, this._fov * Math.PI / 180.0, this._width / this._height, this._near, this._far);
+      // this._proj[10] = -1.0;
+      // this._proj[14] = -2 * this._near;
     } else {
       this.updateOrtho();
     }

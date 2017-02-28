@@ -11,6 +11,17 @@ var v3plus = function(A, B){
 	return [A[0]+B[0],A[1]+B[1],A[2]+B[2]];
 }
 
+var qinverse = function(Q) {
+      var w = Q[3];
+      var x = Q[0];
+      var y = Q[1];
+      var z = Q[2];
+      var normSq = w * w + x * x + y * y + z * z;
+      if (normSq === 0) return [ 0, 0, 0, 1 ];
+      normSq = 1 / normSq;
+      return [-x * normSq, -y * normSq, -z * normSq, w * normSq];
+}
+
 var WEBVR = {
 	displays: null,
 	display: null,
@@ -35,21 +46,34 @@ var WEBVR = {
 		this.layer = {leftBounds:[0.0, 0.0, 0.5, 1.0],rightBounds:[0.5, 0.0, 0.5, 1.0]};
 		this.layer.source = document.getElementById("canvas");
 		document.body.appendChild(this.getButton());
+		window.OFF = 4;
+		window.FOV = 105.6;
+		window.useProj = true;
 		this.display.requestAnimationFrame(this.update.bind(this));
 		window.pose = {position: [0, 0, 0.5], orientation:[ 0, 0, 0, 1 ]}
+
 
 	},
 	updateEye: function(n){
 		if (window['pose'] && window['pose']['position']) {
-			Scene._camera._usePivot = false;
-			Scene._camera._quatRot = pose.orientation;
-			Scene._camera._proj = 
-				this.makeProjectionMatrix(this.display, this.eyeparams);
-			Scene._camera.setTrans(v3plus(
-				v3mult(pose.position, 200), 
-				//[0-((WEBVR.eyeoffset[n+1]|3)*20),10,100]
-				[-((n+1)*6), -10, 150]
-				));
+			if (window['frameData']){
+				if (n == -1) {
+					mat4.translate(Scene._camera._view, 
+						frameData.leftViewMatrix, 
+						v3plus(v3mult(pose.position, -200),
+							  vec3.transformQuat([0,0,0],[(-n*OFF),0,0], pose.orientation))
+						);
+					Scene._camera._proj = frameData.leftProjectionMatrix
+				}
+				if (n == 1) {
+					mat4.translate(Scene._camera._view, 
+						frameData.rightViewMatrix, 
+						v3plus(v3mult(pose.position, -200),
+							  vec3.transformQuat([0,0,0],[(-n*OFF),0,0], pose.orientation))
+						);
+					Scene._camera._proj = frameData.rightProjectionMatrix
+				}
+			}
 		}
 	},
 	update: function(delta){
@@ -57,6 +81,7 @@ var WEBVR = {
 		if (this.display.isPresenting) {
 			var frameData = new VRFrameData();
         	this.display.getFrameData(frameData);
+        	window.frameData = frameData;
 			window.pose = frameData.pose;
 			Scene.render();
 			this.display.submitFrame(pose);
