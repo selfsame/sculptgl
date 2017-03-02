@@ -3,8 +3,8 @@
 - [x] render webGL to both eyes
 - [x] render 2 camera matricies
 - [x] use frameData proj/view mats
-- [ ] proper vr animation frame updating
-- [ ] controller input transforms
+- [x] proper vr animation frame updating
+- [x] controller input transforms
 - [ ] sync matcap shader
 
 ## adaptation
@@ -16,8 +16,10 @@
 	- [ ] double, rotates|scales model
 
 ## ui
+- [ ] transform/mesh scenegraph node
+- [ ] mesh load pipeline with ui shaders 
 - [ ] left hand panels
-  - [ ] look into mrdoob's html to canvas renderer
+
 
 ## general
 - [ ] detect vr and if not supported show message (or adapt WEBVR.js)

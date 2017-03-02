@@ -255,9 +255,11 @@ class Scene {
       WEBVR.updateEye(-1);
       this.updateMatricesAndSort();
       this._drawScene(0, 0, w, h, true);
+      this._sculptManager.postRender();
       WEBVR.updateEye(1);
       this.updateMatricesAndSort();
       this._drawScene(w, 0, w, h, false);
+      this._sculptManager.postRender();
       this._gl.viewport(0,0,w*2, h);
     }
 
@@ -273,7 +275,7 @@ class Scene {
 
     gl.enable(gl.DEPTH_TEST);
 
-    this._sculptManager.postRender(); // draw sculpting gizmo stuffs
+     // draw sculpting gizmo stuffs
   } 
 
   _drawScene(x, y, w, h, clear) {

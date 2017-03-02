@@ -309,7 +309,7 @@ class SculptGL extends Scene {
     event.preventDefault();
 
     this._gui.callFunc('onMouseMove', event);
-    this.onDeviceMove(event);
+    //this.onDeviceMove(event);
   }
 
   onMouseOver(event) {
