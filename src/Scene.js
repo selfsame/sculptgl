@@ -232,7 +232,7 @@ class Scene {
     if (this._preventRender === true)
       return false; // render already requested for the next frame
 
-    window.requestAnimationFrame(this.applyRender.bind(this));
+    //window.requestAnimationFrame(this.applyRender.bind(this));
     this._preventRender = true;
     return true;
   }
@@ -310,6 +310,13 @@ class Scene {
       if (meshes[i].isTransparent()) break;
       meshes[i].render(this);
     }
+
+    //selfsame
+    if (window['arrow']) {
+      arrow.updateMatrices(this._camera)
+      arrow.renderFlatColor(this);
+    }
+
     var startTransparent = i;
     if (this._meshPreview) this._meshPreview.render(this);
 

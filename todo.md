@@ -2,11 +2,9 @@
 - [x] canvas size (`display.getEyeParameters('left').renderWidth`)
 - [x] render webGL to both eyes
 - [x] render 2 camera matricies
-- [/] us display info to build camera matrix (FOV, position, rotation, etc.)
-	- [ ] get Scene._camera to actually use WEBVR proj
-	- [ ] local offset positions for camera
+- [x] use frameData proj/view mats
 - [ ] proper vr animation frame updating
-- [ ] use head/controller input positions
+- [ ] controller input transforms
 - [ ] sync matcap shader
 
 ## adaptation

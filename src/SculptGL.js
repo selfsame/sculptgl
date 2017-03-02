@@ -7,6 +7,7 @@ import Scene from './Scene';
 import Multimesh from './mesh/multiresolution/Multimesh';
 import WEBVR from "./WEBVR";
 import VREffect from "./VREffect";
+import Primitives from "./drawables/Primitives"
 
 var vec3 = glm.vec3;
 
@@ -16,6 +17,7 @@ var MOUSE_RIGHT = 3;
  
 window.WEBVR = WEBVR;
 window.VREffect = VREffect;
+window.Primitives = Primitives;
 
 
 // Manage events
