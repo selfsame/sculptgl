@@ -468,7 +468,36 @@ class SculptGL extends Scene {
 
     this._lastMouseX = mouseX;
     this._lastMouseY = mouseY;
-    this.renderSelectOverRtt();
+    //this.renderSelectOverRtt();
+  }
+
+  onControllerMove(v3){
+    this._mouseX = v3[0];
+    this._mouseY = v3[1];
+    var action = this._action;
+    Multimesh.RENDER_HINT = Multimesh.PICKING;
+      this._sculptManager.preUpdate();
+      if (action === Enums.Action.SCULPT_EDIT) {
+        Multimesh.RENDER_HINT = Multimesh.SCULPT;
+        this._sculptManager.update(this);
+        if (this.getMesh().isDynamic)
+          this._gui.updateMeshInfo();
+    }
+    this._lastMouseX = v3[0];
+    this._lastMouseY = v3[1];
+  }
+
+  onControllerDown() {
+    var canEdit = false;
+    canEdit = this._sculptManager.start(false); //event.shiftKey
+    this._action = Enums.Action.SCULPT_EDIT;
+  }
+
+  onControllerUp() {
+    Multimesh.RENDER_HINT = Multimesh.NONE;
+    this._sculptManager.end();
+    this._action = Enums.Action.NOTHING;
+    this._stateManager.cleanNoop();
   }
 }
 

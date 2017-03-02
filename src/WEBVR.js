@@ -76,11 +76,12 @@ var WEBVR = {
 					Scene._camera._proj = frameData.rightProjectionMatrix
 				}
 			}
-		}
+		} 
 	},
 	updateGamepads: function(delta){
-		if (gamepads[0]){
-			var pose = gamepads[0].pose;
+		var pad = gamepads[0];
+		if (pad && pad['pose']['position']){
+			var pose = pad.pose;
 			mat4.mul(
 				arrow._transformData._matrix,
 				mat4.fromTranslation(arrow._transformData._matrix,
@@ -88,6 +89,16 @@ var WEBVR = {
 				 mat4.fromQuat(mat4.create(), pose.orientation)
 
 				);
+			Scene.onControllerMove(v3mult(pose.position, VRSCALE*20));
+			if (pad.buttons[1].pressed) {
+				if (!pad['triggerPressed']){
+					pad['triggerPressed'] = true;
+					Scene.onControllerDown();
+				}
+			} else {
+				pad['triggerPressed'] = false;
+				Scene.onControllerUp();
+			}
 		}
 	},
 	update: function(delta){
@@ -102,6 +113,15 @@ var WEBVR = {
 			Scene.applyRender();
 			this.display.submitFrame(pose);
 		}
+	},
+	controllerRay: function(idx){
+		var pad = gamepads[idx];
+		if (pad){
+			return [
+				v3mult(pad.pose.position, VRSCALE), 
+				vec3.transformQuat([0,0,0],[0,-1000,0], pad.pose.orientation)];
+		}
+		return [[0,0,0],[0,0,0]];
 	},
 	makeProjectionMatrix: function (display, eye) {
 	  var d2r = Math.PI / 180.0;

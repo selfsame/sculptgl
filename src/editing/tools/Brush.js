@@ -5,6 +5,8 @@ import Flatten from '../../editing/tools/Flatten';
 
 var vec3 = glm.vec3;
 
+window.Tablet = Tablet;
+
 class Brush extends SculptBase {
 
   constructor(main) {

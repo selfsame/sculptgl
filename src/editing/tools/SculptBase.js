@@ -52,7 +52,6 @@ class SculptBase {
     this._lastMouseX = main._mouseX;
     this._lastMouseY = main._mouseY;
     this.startSculpt();
-
     return true;
   }
 

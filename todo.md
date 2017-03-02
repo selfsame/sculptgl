@@ -9,6 +9,10 @@
 
 ## adaptation
 - [ ] controller ray instead of mouse ray for cursor
+	- [x] call SculptGL.onDeviceMove every frame (from WEBVR.update)
+	- [x] SculptBase.preUpdate calls Picking fns with controller ray 
+	- [x] Route controller trigger to onDeviceDown
+	- [ ] get sculpt effect
 - [ ] ray distance to brush size
 - [ ] use trigger sensitivity
 - [ ] grip buttons
