@@ -8,16 +8,17 @@
 - [ ] sync matcap shader
 
 ## adaptation
-- [ ] controller ray instead of mouse ray for cursor
+- [x] controller ray instead of mouse ray for cursor
 	- [x] call SculptGL.onDeviceMove every frame (from WEBVR.update)
 	- [x] SculptBase.preUpdate calls Picking fns with controller ray 
 	- [x] Route controller trigger to onDeviceDown
-	- [ ] get sculpt effect
-- [ ] ray distance to brush size
-- [ ] use trigger sensitivity
-- [ ] grip buttons
-	- [ ] single, translate model
-	- [ ] double, rotates|scales model
+- [/] ray distance to brush size
+- [/] use trigger sensitivity
+- [ ] prevent out of control tool updates (large radius, wonky geom, updating every frame)
+- [/] grip buttons
+	- [x] translate model
+	- [ ] relative rotation
+	- [ ] double scales model
 
 ## ui
 - [ ] transform/mesh scenegraph node

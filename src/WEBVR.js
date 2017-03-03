@@ -13,6 +13,17 @@ var v3plus = function(A, B){
 	return [A[0]+B[0],A[1]+B[1],A[2]+B[2]];
 }
 
+var v3sub = function(A, B){
+	return [A[0]-B[0],A[1]-B[1],A[2]-B[2]];
+}
+
+var v3dist = function(A, B){
+	var x = A[0] - B[0];
+	var y = A[1] - B[1];
+	var z = A[2] - B[2];
+	return Math.sqrt( x*x + y*y + z*z );
+}
+
 var qinverse = function(Q) {
       var w = Q[3];
       var x = Q[0];
@@ -31,6 +42,9 @@ var WEBVR = {
 	eyedims: [1512,1680],
 	eyeoffset: 3,
 	layer: null,
+	tools: [0,1,4,5,6],
+	toolColors: [[1,0,0],[0,1,0],[0,0,1],[1,1,0],[0,1,1]],
+	currentTool: 0,
 
 	init: function () {
 		navigator.getVRDisplays().then(this.vrinit.bind(this));
@@ -80,25 +94,131 @@ var WEBVR = {
 	},
 	updateGamepads: function(delta){
 		var pad = gamepads[0];
-		if (pad && pad['pose']['position']){
+		if (pad && pad['pose']['position'] && pad['pose']['orientation']){
 			var pose = pad.pose;
+
+			//grip
+			if (!pad['lastPosition']) {pad['lastPosition'] = pose['position']}
+			if (!pad['lastOrientation']) {pad['lastOrientation'] = pose['orientation']}
+			var deltaPos = v3sub(pose['position'], pad['lastPosition']);
+			pad['lastPosition'] = pose['position'];
+			var deltaOrientation = quat.multiply([0,0,0,0],
+				quat.invert([0,0,0,0], pad['lastOrientation']),
+				pose['orientation'])
+			pad['lastOrientation'] = pose['orientation'];
+			if (pad.buttons[2].pressed ) { 
+				var mesh = Scene._sculptManager.getCurrentTool().getMesh();
+				var M = mesh._transformData._matrix;
+
+				if (mesh){
+					mat4.fromRotationTranslationScale( M,
+						pose['orientation'],
+						v3plus(mat4.getTranslation([0,0,0], M), 
+							   v3mult(deltaPos, VRSCALE)),
+						[50,50,50]);
+				}
+			}
+			
 			mat4.mul(
 				arrow._transformData._matrix,
 				mat4.fromTranslation(arrow._transformData._matrix,
 					v3mult(pose.position, VRSCALE)),
-				 mat4.fromQuat(mat4.create(), pose.orientation)
+				 mat4.fromQuat(mat4.create(), pose.orientation));
+			Scene.onControllerMove(v3mult(pose.position, VRSCALE*30 ));
 
-				);
-			Scene.onControllerMove(v3mult(pose.position, VRSCALE*20));
-			if (pad.buttons[1].pressed) {
+			if (pad.buttons[1].pressed || pad['TIC'] < 6) {
 				if (!pad['triggerPressed']){
 					pad['triggerPressed'] = true;
 					Scene.onControllerDown();
 				}
 			} else {
-				pad['triggerPressed'] = false;
-				Scene.onControllerUp();
+				if (pad['triggerPressed']){
+					pad['triggerPressed'] = false;
+					Scene.onControllerUp();
+				}
 			}
+			if (!pad['TIC']) {pad['TIC'] = 0}
+			if (pad['LTI'] != pad.axes[2]) {
+				pad['TIC'] = 0
+			} else {
+				pad['TIC']++;
+			}
+			pad['LTI'] = pad.axes[2];
+
+			Scene._sculptManager.getCurrentTool()._intensity = pad.axes[2];
+
+			if (pad.buttons[0].pressed ) {
+				if (!pad['padPressed']){
+					pad['padPressed'] = true;
+					var neg = Scene._sculptManager.getCurrentTool()._negative;
+					Scene._sculptManager.getCurrentTool()._negative = !neg;
+				}
+			} else {
+				if (pad['padPressed']){
+					pad['padPressed'] = false;
+				}
+			}
+
+			if (pad.buttons[3].pressed ) {
+				if (!pad['menuPressed']){
+					pad['menuPressed'] = true;
+					Scene._stateManager.redo()
+				}
+			} else {
+				if (pad['menuPressed']){
+					pad['menuPressed'] = false;
+				}
+			}
+		}
+
+		//////////////////////////////////////////////
+
+		var pad = gamepads[1];
+		if (pad && pad['pose']['position']){
+			var pose = pad.pose;
+
+			if (pad.buttons[0].pressed ) {
+				if (!pad['padPressed']){
+					pad['padPressed'] = true;
+					this.currentTool++;
+					if (this.currentTool >= this.tools.length)
+					{
+						this.currentTool = 0;
+					}
+					Scene._sculptManager._toolIndex = this.tools[this.currentTool];
+					arrow._renderData._flatColor = this.toolColors[this.currentTool];
+				}
+			} else {
+				if (pad['padPressed']){
+					pad['padPressed'] = false;
+				}
+			}
+
+			if (pad.buttons[1].pressed ) {
+				if (!pad['triggerPressed']){
+					pad['triggerPressed'] = true;
+					pad['lastTool'] = Scene._sculptManager._toolIndex;
+					Scene._sculptManager._toolIndex = 3;
+					arrow._renderData._flatColor = [1,0,1];
+				}
+			} else {
+				if (pad['triggerPressed']){
+					pad['triggerPressed'] = false;
+					Scene._sculptManager._toolIndex = pad['lastTool'];
+					arrow._renderData._flatColor = this.toolColors[this.currentTool];
+				}
+			}
+			if (pad.buttons[3].pressed ) {
+				if (!pad['menuPressed']){
+					pad['menuPressed'] = true;
+					Scene._stateManager.undo()
+				}
+			} else {
+				if (pad['menuPressed']){
+					pad['menuPressed'] = false;
+				}
+			}
+			 
 		}
 	},
 	update: function(delta){
@@ -122,6 +242,17 @@ var WEBVR = {
 				vec3.transformQuat([0,0,0],[0,-1000,0], pad.pose.orientation)];
 		}
 		return [[0,0,0],[0,0,0]];
+	},
+	controllerDistance: function(v){
+		var mesh = Scene._sculptManager.getCurrentTool().getMesh();
+		var M = mesh._transformData._matrix;
+		v = v3plus(v, mat4.getTranslation([0,0,0], M));
+		var pad = gamepads[0];
+		if (pad){
+			var dist = v3dist(v, v3mult(pad.pose.position, VRSCALE))*0.1;
+			return Math.max((dist*dist)-8, 0.1);
+		}
+		return 1;
 	},
 	makeProjectionMatrix: function (display, eye) {
 	  var d2r = Math.PI / 180.0;

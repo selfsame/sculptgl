@@ -54,6 +54,7 @@ class Picking {
     this._alphaSide = 0.0;
     this._alphaLookAt = mat4.create();
     this._alpha = null;
+    this.RADIUS = 1;
   }
 
   setIdAlpha(id) {
@@ -378,14 +379,13 @@ class Picking {
   }
 
   computeWorldRadius2(ignorePressure) {
-
     vec3.transformMat4(_TMP_INTER, this.getIntersectionPoint(), this._mesh.getMatrix());
-
     var offsetX = this._main.getSculptManager().getCurrentTool().getScreenRadius();
     if (!ignorePressure) offsetX *= Tablet.getPressureRadius();
-
     var screenInter = this.project(_TMP_INTER);
-    return vec3.sqrDist(_TMP_INTER, this.unproject(screenInter[0] + offsetX, screenInter[1], screenInter[2]));
+    //return vec3.sqrDist(_TMP_INTER, this.unproject(screenInter[0] + offsetX, screenInter[1], screenInter[2]));
+    this.RADIUS = WEBVR.controllerDistance(this.getIntersectionPoint());
+    return this.RADIUS;
   }
 
   updateLocalAndWorldRadius2() {
