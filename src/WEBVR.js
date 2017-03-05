@@ -45,9 +45,12 @@ var WEBVR = {
 	tools: [0,1,4,5,6],
 	toolColors: [[1,0,0],[0,1,0],[0,0,1],[1,1,0],[0,1,1]],
 	currentTool: 0,
+	S: 1,
+	initialS: 1,
 
 	init: function () {
 		navigator.getVRDisplays().then(this.vrinit.bind(this));
+
 	},
 
 	vrinit: function(displays){
@@ -69,6 +72,7 @@ var WEBVR = {
 		window.arrow = Primitives.createArrow(Scene._gl);
 		this.display.requestAnimationFrame(this.update.bind(this));
 		window.pose = {position: [0, 0, 0.5], orientation:[ 0, 0, 0, 1 ]}
+		Scene._sculptManager.getCurrentTool().getMesh()._renderData._curvature = 3;
 	},
 	updateEye: function(n){
 		if (window['pose'] && window['pose']['position']) {
@@ -102,20 +106,44 @@ var WEBVR = {
 			if (!pad['lastOrientation']) {pad['lastOrientation'] = pose['orientation']}
 			var deltaPos = v3sub(pose['position'], pad['lastPosition']);
 			pad['lastPosition'] = pose['position'];
-			var deltaOrientation = quat.multiply([0,0,0,0],
+			var deltaOrientation = quat.mul([0,0,0,0],
 				quat.invert([0,0,0,0], pad['lastOrientation']),
 				pose['orientation'])
 			pad['lastOrientation'] = pose['orientation'];
+			Scene._sculptManager.getCurrentTool().getMesh()
+			var mesh = Scene._sculptManager.getCurrentTool().getMesh();
+			var M = mesh._transformData._matrix;
+
 			if (pad.buttons[2].pressed ) { 
-				var mesh = Scene._sculptManager.getCurrentTool().getMesh();
-				var M = mesh._transformData._matrix;
+
+				if (!pad['gripPressed']){
+					pad['gripPressed'] = true;
+				}
+
+				if (gamepads[1]['gripPressed'] == true){
+					//console.log(mat4.getScale([0,0,0], M));
+					var initialDist = gamepads[1]['distCache'];
+					var dist = v3dist(gamepads[1].pose.position, pose.position);
+					this.S = (dist / initialDist)*this.initialS;
+				}
+
+				
 
 				if (mesh){
 					mat4.fromRotationTranslationScale( M,
+						// quat.normalize( [0,0,0,0],
+						// 	quat.mul([0,0,0,0],
+						// 		mat4.getRotation([0,0,0,0], M),
+						// 		quat.normalize( [0,0,0,0], deltaOrientation) )),
+
 						pose['orientation'],
 						v3plus(mat4.getTranslation([0,0,0], M), 
 							   v3mult(deltaPos, VRSCALE)),
-						[50,50,50]);
+						[60*this.S,60*this.S,60*this.S]);
+				}
+			} else {
+				if (pad['gripPressed']){
+					pad['gripPressed'] = false;
 				}
 			}
 			
@@ -169,6 +197,7 @@ var WEBVR = {
 					pad['menuPressed'] = false;
 				}
 			}
+			
 		}
 
 		//////////////////////////////////////////////
@@ -218,6 +247,19 @@ var WEBVR = {
 					pad['menuPressed'] = false;
 				}
 			}
+
+			if (pad.buttons[2].pressed ) { 
+				if (!pad['gripPressed']){
+					pad['gripPressed'] = true;
+					// cache controller position
+					pad['distCache'] = v3dist(gamepads[0].pose.position, pose.position);
+					this.initialS = this.S;
+				}
+			} else {
+				if (pad['gripPressed']){
+					pad['gripPressed'] = false;
+				}
+			}
 			 
 		}
 	},
@@ -249,41 +291,10 @@ var WEBVR = {
 		v = v3plus(v, mat4.getTranslation([0,0,0], M));
 		var pad = gamepads[0];
 		if (pad){
-			var dist = v3dist(v, v3mult(pad.pose.position, VRSCALE))*0.1;
-			return Math.max((dist*dist)-8, 0.1);
+			var dist = (v3dist(v, v3mult(pad.pose.position, VRSCALE))*0.1)/this.S;
+			return Math.max(((dist*dist)-7), 0.1);
 		}
 		return 1;
-	},
-	makeProjectionMatrix: function (display, eye) {
-	  var d2r = Math.PI / 180.0;
-	  var upTan = Math.tan(eye.fieldOfView.upDegrees * d2r);
-	  var downTan = Math.tan(eye.fieldOfView.leftDegrees * d2r);
-	  var rightTan = Math.tan(eye.fieldOfView.rightDegrees * d2r);
-	  var leftTan = Math.tan(eye.fieldOfView.leftDegrees * d2r);
-	  var xScale = 2.0 / (leftTan + rightTan);
-	  var yScale = 2.0 / (upTan + downTan);
-
-	  var out = new Float32Array(16);
-	  out[0] = xScale;
-	  out[1] = 0.0;
-	  out[2] = 0.0;
-	  out[3] = 0.0;
-	  
-	  out[4] = 0.0;
-	  out[5] = yScale;
-	  out[6] = 0.0;
-	  out[7] = 0.0;
-	  
-	  out[8] = -((leftTan - rightTan) * xScale * 0.5);
-	  out[9] = (upTan - downTan) * yScale * 0.5;
-	  out[10] = -(display.depthNear + display.depthFar) / (display.depthFar - display.depthNear);
-
-	  out[12] = 0.0;
-	  out[13] = 0.0;
-	  out[14] = -(2.0 * display.depthFar * display.depthNear) / (display.depthFar - display.depthNear);
-	  out[15] = 0.0;
-
-	  return out;
 	},
 
 	isLatestAvailable: function () {
