@@ -28,3 +28,6 @@
 
 ## general
 - [ ] detect vr and if not supported show message (or adapt WEBVR.js)
+
+## bugs
+- [ ] can undo when no more history

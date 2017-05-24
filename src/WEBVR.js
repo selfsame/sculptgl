@@ -83,6 +83,7 @@ var WEBVR = {
 						v3plus(v3mult(pose.position, -VRSCALE),
 							  vec3.transformQuat([0,0,0],[(-n*OFF),0,0], pose.orientation))
 						);
+					window.leftProjectionMatrix = frameData.leftProjectionMatrix
 					Scene._camera._proj = frameData.leftProjectionMatrix
 				}
 				if (n == 1) {
