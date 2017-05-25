@@ -1,9 +1,22 @@
-SculptGL - WebGL sculpting
+SculptGL (VR) - WebGL sculpting
 ==========================
 
-You can try it [**here**](http://stephaneginier.com/sculptgl).
+Vive controls
+=============
 
-Additional information can be found on the [website](http://stephaneginier.com/).
+## Right Controller: cursor projects to mesh
+
+* right trigger - sculpt
+* right pad click - toggle invert
+* right grip - move mesh
+* right steam button - redo
+
+## Left Controller:
+
+* left trigger - quick smooth tool
+* left pad click - cycle tool (tool displayed with cursor color)
+* left grip - scale mesh when combined with right grip
+* left steam button - undo
 
 Tools
 =====
