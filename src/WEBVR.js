@@ -35,6 +35,11 @@ var qinverse = function(Q) {
       return [-x * normSq, -y * normSq, -z * normSq, w * normSq];
 }
 
+
+var QM = function(A, B){return quat.mul([0,0,0,0],A,B)}
+var QI = function(A){return quat.invert([0,0,0,0],A)}
+var M4Q = function(M){return mat4.getRotation([0,0,0,0], M)}
+
 var WEBVR = {
 	displays: null,
 	display: null,
@@ -108,9 +113,7 @@ var WEBVR = {
 			var deltaPos = v3sub(pose['position'], pad['lastPosition']);
 			pad['lastPosition'] = pose['position'];
 
-			var deltaOrientation = quat.mul([0,0,0,0],
-				quat.inv([0,0,0,0], pad['lastOrientation']),
-				pose['orientation']) 
+			var deltaOrientation = QM(pose['orientation'],QI(pad['lastOrientation']))
 
 			pad['lastOrientation'] = pose['orientation'];
 			Scene._sculptManager.getCurrentTool().getMesh()
@@ -132,18 +135,16 @@ var WEBVR = {
 					this.S = (dist / initialDist)*this.initialS;
 				}
 
-				
-
+				// a * b * c
+				// mul(mul(a, b), c)
+ 				var rot = M4Q(M)
 				if (mesh){
-					mat4.fromRotationTranslationScale( M,					 
-						quat.mul([0,0,0,0],
-							mat4.getRotation([0,0,0,0], M),
-							deltaOrientation), 
-						v3plus(mat4.getTranslation([0,0,0], M), 
-							   v3mult(deltaPos, VRSCALE)),
+					mat4.fromRotationTranslationScale( M,	
+						QM( deltaOrientation, rot),
+						v3plus(
+							mat4.getTranslation([0,0,0], M), 
+							v3mult(deltaPos, VRSCALE)),
 						[60*this.S,60*this.S,60*this.S]);
-
-					mat4.fromQuat
 				}
 			} else {
 				if (pad['gripPressed']){

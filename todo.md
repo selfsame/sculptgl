@@ -21,10 +21,10 @@
 	- [ ] relative rotation
 	- [ ] double scales model
 
-- [/] delta rotation
+- [x] delta rotation
 	- [x] can't seem to reconstruct model matrix when using M.getRotation()
 	 oh ffs https://github.com/toji/gl-matrix/issues/245
-	- [ ] need to take relative controller position into account
+	- [x] need to take relative controller position into account
 
 ## ui
 - [ ] transform/mesh scenegraph node
