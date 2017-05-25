@@ -107,9 +107,11 @@ var WEBVR = {
 			if (!pad['lastOrientation']) {pad['lastOrientation'] = pose['orientation']}
 			var deltaPos = v3sub(pose['position'], pad['lastPosition']);
 			pad['lastPosition'] = pose['position'];
+
 			var deltaOrientation = quat.mul([0,0,0,0],
-				quat.invert([0,0,0,0], pad['lastOrientation']),
-				pose['orientation'])
+				quat.inv([0,0,0,0], pad['lastOrientation']),
+				pose['orientation']) 
+
 			pad['lastOrientation'] = pose['orientation'];
 			Scene._sculptManager.getCurrentTool().getMesh()
 			var mesh = Scene._sculptManager.getCurrentTool().getMesh();
@@ -119,9 +121,11 @@ var WEBVR = {
 
 				if (!pad['gripPressed']){
 					pad['gripPressed'] = true;
+					gamepads[1]['distCache'] = v3dist(gamepads[1].pose.position, pose.position);
+					this.initialS = this.S;
 				}
 
-				if (gamepads[1]['gripPressed'] == true){
+				if (gamepads[1] && gamepads[1]['gripPressed'] == true){
 					//console.log(mat4.getScale([0,0,0], M));
 					var initialDist = gamepads[1]['distCache'];
 					var dist = v3dist(gamepads[1].pose.position, pose.position);
@@ -131,16 +135,15 @@ var WEBVR = {
 				
 
 				if (mesh){
-					mat4.fromRotationTranslationScale( M,
-						// quat.normalize( [0,0,0,0],
-						// 	quat.mul([0,0,0,0],
-						// 		mat4.getRotation([0,0,0,0], M),
-						// 		quat.normalize( [0,0,0,0], deltaOrientation) )),
-
-						pose['orientation'],
+					mat4.fromRotationTranslationScale( M,					 
+						quat.mul([0,0,0,0],
+							mat4.getRotation([0,0,0,0], M),
+							deltaOrientation), 
 						v3plus(mat4.getTranslation([0,0,0], M), 
 							   v3mult(deltaPos, VRSCALE)),
 						[60*this.S,60*this.S,60*this.S]);
+
+					mat4.fromQuat
 				}
 			} else {
 				if (pad['gripPressed']){
@@ -155,7 +158,7 @@ var WEBVR = {
 				 mat4.fromQuat(mat4.create(), pose.orientation));
 			Scene.onControllerMove(v3mult(pose.position, VRSCALE*30 ));
 
-			if (pad.buttons[1].pressed || pad['TIC'] < 6) {
+			if (pad.buttons[1].pressed) {
 				if (!pad['triggerPressed']){
 					pad['triggerPressed'] = true;
 					Scene.onControllerDown();
@@ -166,15 +169,8 @@ var WEBVR = {
 					Scene.onControllerUp();
 				}
 			}
-			if (!pad['TIC']) {pad['TIC'] = 0}
-			if (pad['LTI'] != pad.axes[2]) {
-				pad['TIC'] = 0
-			} else {
-				pad['TIC']++;
-			}
-			pad['LTI'] = pad.axes[2];
 
-			Scene._sculptManager.getCurrentTool()._intensity = pad.axes[2];
+			Scene._sculptManager.getCurrentTool()._intensity = pad.buttons[1].value;
 
 			if (pad.buttons[0].pressed ) {
 				if (!pad['padPressed']){
