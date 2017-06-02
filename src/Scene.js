@@ -319,12 +319,6 @@ class Scene {
       arrow.renderFlatColor(this);
     }
 
-    for (i = 0; i < WEBVR.renderables.length; i++) {
-      var mesh = WEBVR.renderables[i];
-      mesh.updateMatrices(this._camera);
-      mesh.renderFlatColor(this);
-    }
-
     var startTransparent = i;
     if (this._meshPreview) this._meshPreview.render(this);
 

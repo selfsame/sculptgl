@@ -2042,6 +2042,7 @@ class Mesh {
     var hasUV = this.hasUV();
     var fAr = this.getFaces();
     var fArUV = hasUV ? this.getFacesTexCoord() : fAr;
+
     var nbFaces = this.getNbFaces();
     var nbUniqueVertices = this.getNbVertices();
     var nbVertices = hasUV ? this.getNbTexCoords() : nbUniqueVertices;
