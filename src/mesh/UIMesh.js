@@ -8,6 +8,7 @@ import Shader from '../render/ShaderLib';
 var vec3 = glm.vec3;
 var mat3 = glm.mat3;
 var mat4 = glm.mat4;
+var quat = glm.quat;
 
 /*
 Basic usage:
@@ -24,13 +25,18 @@ mesh.init(); // compute octree/topo/UV, etc...
 mesh.initRender(); // only if gl has been provided
 */
 
-class Mesh {
+class UIMesh {
 
   constructor() {
-    this._id = Mesh.ID++; // useful id to retrieve a mesh (dynamic mesh, multires mesh, voxel mesh)
     this._meshData = null;
     this._transformData = null;
     this._renderData = null;
+    this.parent = null
+    this.children = []
+    this.position = [0,0,0]
+    this.scale = [1,1,1]
+    this.rotation = quat.create()
+
   }
 
   static sortFunction(meshA, meshB) {
@@ -40,10 +46,6 @@ class Mesh {
     if (aTr && !bTr) return 1;
     if (!aTr && bTr) return -1;
     return (meshB.getDepth() - meshA.getDepth()) * (aTr && bTr ? 1.0 : -1.0);
-  }
-
-  setID(id) {
-    this._id = id;
   }
 
   setVertices(vAr) {
@@ -95,10 +97,6 @@ class Mesh {
 
   setNbFaces(nbFaces) {
     this._meshData._nbFaces = nbFaces;
-  }
-
-  getID() {
-    return this._id;
   }
 
   getRenderData() {
@@ -2042,6 +2040,7 @@ class Mesh {
     var hasUV = this.hasUV();
     var fAr = this.getFaces();
     var fArUV = hasUV ? this.getFacesTexCoord() : fAr;
+
     var nbFaces = this.getNbFaces();
     var nbUniqueVertices = this.getNbVertices();
     var nbVertices = hasUV ? this.getNbTexCoords() : nbUniqueVertices;

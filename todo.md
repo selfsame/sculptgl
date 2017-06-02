@@ -18,13 +18,12 @@
 - [ ] prevent out of control tool updates (large radius, wonky geom, updating every frame)
 - [/] grip buttons
 	- [x] translate model
-	- [ ] relative rotation
-	- [ ] double scales model
-
-- [x] delta rotation
-	- [x] can't seem to reconstruct model matrix when using M.getRotation()
-	 oh ffs https://github.com/toji/gl-matrix/issues/245
-	- [x] need to take relative controller position into account
+	- [x] relative rotation
+	- [/] double scales model
+		- [ ] either hand triggers and takes initial scale into account	
+- [ ] mesh import/export
+	- [ ] record imported scale
+	- [ ] reset translation/scale when exporting
 
 ## ui
 - [ ] transform/mesh scenegraph node

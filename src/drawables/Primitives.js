@@ -283,7 +283,7 @@ var createGridArray = function (
   };
 };
 
-var createMesh = function (gl, arr) {
+Primitives.createMesh = function (gl, arr) {
   var mesh = new MeshStatic(gl);
   mesh.setVertices(arr.vertices);
   if (arr.faces) mesh.setFaces(arr.faces);
@@ -293,6 +293,8 @@ var createMesh = function (gl, arr) {
   if (gl) mesh.initRender();
   return mesh;
 };
+
+var createMesh = Primitives.createMesh
 
 var slice = Array.prototype.slice;
 

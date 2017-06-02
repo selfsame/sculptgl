@@ -1,7 +1,7 @@
-/**
- * @author mrdoob / http://mrdoob.com
- * Based on @tojiro's vr-samples-utils.js
- */
+import frame from "./drawables/frame"
+import Mesh from './mesh/Mesh';
+import MeshStatic from './mesh/meshStatic/MeshStatic';
+import Primitives from './drawables/Primitives';
 
 window.VRSCALE = 160;
 
@@ -52,11 +52,25 @@ var WEBVR = {
 	currentTool: 0,
 	S: 1,
 	initialS: 1,
+	renderables: [],
 
 	init: function () {
 		navigator.getVRDisplays().then(this.vrinit.bind(this));
+		this.frame = frame
+
 
 	},
+
+	make_frame: function(){
+		var mesh = new MeshStatic(Scene._gl)
+		mesh.setVertices(frame.vertices)
+		mesh.setFaces(frame.faces)
+		//mesh.init()
+		//mesh.initRender()
+		//return Primitives.createPlane(Scene._gl)
+		return mesh
+	},
+
 
 	vrinit: function(displays){
 		console.log(this);
