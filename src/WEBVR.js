@@ -52,6 +52,8 @@ var WEBVR = {
 	currentTool: 0,
 	S: 1,
 	initialS: 1,
+	left_idx:null,
+	right_idx:null,
 
 	init: function () {
 		navigator.getVRDisplays().then(this.vrinit.bind(this));
@@ -79,6 +81,22 @@ var WEBVR = {
 		window.pose = {position: [0, 0, 0.5], orientation:[ 0, 0, 0, 1 ]}
 		Scene._sculptManager.getCurrentTool().getMesh()._renderData._curvature = 3;
 	},
+	find_controllers: function(){
+		var found = 0
+		for (var i = 0; i < gamepads.length; i++) {
+			var pad = gamepads[i]
+			if (pad){
+				if (pad.id == "OpenVR Gamepad"){
+					if (found == 0){
+						this.left_idx = i
+					} else {
+						this.right_idx = i
+					}
+				}
+			}
+		}
+		
+	},
 	updateEye: function(n){
 		if (window['pose'] && window['pose']['position']) {
 			if (window['frameData']){
@@ -103,8 +121,11 @@ var WEBVR = {
 		} 
 	},
 	updateGamepads: function(delta){
-		var pad = gamepads[0];
-		if (pad && pad['pose']['position'] && pad['pose']['orientation']){
+		if (this.left_idx == null || this.right_idx == null) {
+			this.find_controllers()
+		}
+		var pad = gamepads[this.left_idx];
+		if (pad && pad['pose'] != null && pad['pose']['position'] && pad['pose']['orientation']){
 			var pose = pad.pose;
 
 			//grip
@@ -124,14 +145,14 @@ var WEBVR = {
 
 				if (!pad['gripPressed']){
 					pad['gripPressed'] = true;
-					gamepads[1]['distCache'] = v3dist(gamepads[1].pose.position, pose.position);
+					gamepads[this.right_idx]['distCache'] = v3dist(gamepads[this.right_idx].pose.position, pose.position);
 					this.initialS = this.S;
 				}
 
-				if (gamepads[1] && gamepads[1]['gripPressed'] == true){
+				if (gamepads[this.right_idx] && gamepads[1]['gripPressed'] == true){
 					//console.log(mat4.getScale([0,0,0], M));
-					var initialDist = gamepads[1]['distCache'];
-					var dist = v3dist(gamepads[1].pose.position, pose.position);
+					var initialDist = gamepads[this.right_idx]['distCache'];
+					var dist = v3dist(gamepads[this.right_idx].pose.position, pose.position);
 					this.S = (dist / initialDist)*this.initialS;
 				}
 
@@ -200,8 +221,8 @@ var WEBVR = {
 
 		//////////////////////////////////////////////
 
-		var pad = gamepads[1];
-		if (pad && pad['pose']['position']){
+		var pad = gamepads[this.right_idx];
+		if (pad && pad['pose'] != null && pad['pose']['position']){
 			var pose = pad.pose;
 
 			if (pad.buttons[0].pressed ) {
@@ -250,7 +271,7 @@ var WEBVR = {
 				if (!pad['gripPressed']){
 					pad['gripPressed'] = true;
 					// cache controller position
-					pad['distCache'] = v3dist(gamepads[0].pose.position, pose.position);
+					pad['distCache'] = v3dist(gamepads[this.left_idx].pose.position, pose.position);
 					this.initialS = this.S;
 				}
 			} else {
