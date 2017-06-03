@@ -3,7 +3,11 @@ SculptGL (VR) - WebGL sculpting
 
 A fork of [sculptgl](https://github.com/stephomi/sculptgl) adapted for webVR
 
-This is under development, but usable.  A build is up at [http://selfsamegames.com/sculptglvr](http://selfsamegames.com/sculptglvr)
+![s01](https://cloud.githubusercontent.com/assets/2467644/26756270/51157374-486c-11e7-8e4b-ccb7f1e041f4.gif)
+
+This is under development, but usable.  
+
+## [try it out here](http://selfsamegames.com/sculptglvr)
 
 You need a browser that supports webVR ([https://webvr.rocks/](https://webvr.rocks/)).
 
