@@ -121,10 +121,7 @@ class Move extends SculptBase {
     var cx = center[0];
     var cy = center[1];
     var cz = center[2];
-    //var dir = moveData.dir;
-
-    var dir = WEBVR.rightOffset(mesh)
-
+    var dir = moveData.dir;
 
     var dirx = dir[0];
     var diry = dir[1];
@@ -150,33 +147,14 @@ class Move extends SculptBase {
 
   updateMoveDir(picking, mouseX, mouseY, useSymmetry) {
     var mesh = this.getMesh();
-    var vNear = picking.unproject(mouseX, mouseY, 0.0);
-    var vFar = picking.unproject(mouseX, mouseY, 0.1);
-    var matInverse = mat4.create();
-    mat4.invert(matInverse, mesh.getMatrix());
-    vec3.transformMat4(vNear, vNear, matInverse);
-    vec3.transformMat4(vFar, vFar, matInverse);
-
     var moveData = useSymmetry ? this._moveDataSym : this._moveData;
+    var offset = WEBVR.rightOffset(mesh)
     if (useSymmetry) {
       var ptPlane = mesh.getSymmetryOrigin();
       var nPlane = mesh.getSymmetryNormal();
-      Geometry.mirrorPoint(vNear, ptPlane, nPlane);
-      Geometry.mirrorPoint(vFar, ptPlane, nPlane);
+      Geometry.mirrorPoint(offset, ptPlane, nPlane);
     }
-
-    if (this._negative) {
-      var len = vec3.dist(Geometry.vertexOnLine(moveData.center, vNear, vFar), moveData.center);
-      vec3.normalize(moveData.dir, picking.computePickedNormal());
-      vec3.scale(moveData.dir, moveData.dir, mouseX < this._lastMouseX ? -len : len);
-    } else {
-      vec3.sub(moveData.dir, Geometry.vertexOnLine(moveData.center, vNear, vFar), moveData.center);
-    }
-    vec3.scale(moveData.dir, moveData.dir, this._intensity);
-
-    var eyeDir = picking.getEyeDirection();
-    vec3.sub(eyeDir, vFar, vNear);
-    vec3.normalize(eyeDir, eyeDir);
+    moveData.dir = offset
   }
 }
 

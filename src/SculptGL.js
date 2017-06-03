@@ -483,8 +483,8 @@ class SculptGL extends Scene {
         if (this.getMesh().isDynamic)
           this._gui.updateMeshInfo();
     }
-    this._lastMouseX = v3[0];
-    this._lastMouseY = v3[1];
+    this._lastMouseX = v3[0]+v3[2];
+    this._lastMouseY = v3[1]+v3[2];
   }
 
   onControllerDown() {

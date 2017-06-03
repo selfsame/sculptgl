@@ -218,8 +218,9 @@ var WEBVR = {
 			if (pad.buttons[2].pressed ) { 
 				if (!right['gripPressed']){
 					right['gripPressed'] = true;
-					gamepads[1]['distCache'] = v3dist(gamepads[1].pose.position, pose.position);
-
+					if (gamepads[1] && gamepads[1]['pose']['position']) {
+						left['distCache'] = v3dist(gamepads[1].pose.position, pose.position)
+					}
 					this.initialS = Scene._mesh.scale;
 				}
 				
@@ -260,7 +261,6 @@ var WEBVR = {
 			} else {
 				if (right['triggerPressed']){
 					right['triggerPressed'] = false;
-					console.log("onControllerUp!",+pad.buttons[1].value)
 					Scene.onControllerUp();
 				}
 			}

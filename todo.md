@@ -26,9 +26,10 @@
 	 oh ffs https://github.com/toji/gl-matrix/issues/245
 	- [x] need to take relative controller position into account
 
-- [ ] move tool
-	- [ ] rewrite from [x,y] mouse delta to pad position delta
-		- [ ] store stroke initial position, Move dir is delta from start?
+- [x] move tool
+	- [x] rewrite from [x,y] mouse delta to pad position delta
+		- [x] store stroke initial position, Move dir is delta from start?
+		- [x] symmetry
 
 ## ui
 - [ ] transform/mesh scenegraph node
