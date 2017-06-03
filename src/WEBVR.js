@@ -71,6 +71,8 @@ var WEBVR = {
 	currentTool: 0,
 	initialS: [1,1,1],
 	debug_point: null,
+	right:{},
+	left:{},
 
 	init: function () {
 		navigator.getVRDisplays().then(this.vrinit.bind(this));
@@ -168,8 +170,8 @@ var WEBVR = {
 	},
 
 	getRightDeltaPosition(){
-		if (gamepads[0] && gamepads[0]['deltaPosition'] && gamepads[0]['strokeStartPosition']){
-			return v3sub(gamepads[0]['pose']['position'], gamepads[0]['strokeStartPosition'])
+		if (gamepads[0] && this.right['deltaPosition'] && this.right['strokeStartPosition']){
+			return v3sub(gamepads[0]['pose']['position'], this.right['strokeStartPosition'])
 		}
 		return [0,0.01,0]
 	},
@@ -183,24 +185,27 @@ var WEBVR = {
     //var V = vec3.transformMat4([0,0,0], this.getRightDeltaPosition(), matInverse)
     //return v3sub(IP, V)
     var V = this.getRightDeltaPosition()
-    return V
+    //mat4.getScale([0,0,0], M)
+    return v3times(vec3.transformQuat(V, V, M4Q(matInverse)), [2,2,2])
 	},
 
 	updateGamepads: function(delta){
+		var right = this.right
+		var left = this.left
 		var pad = gamepads[0];
 		if (pad && pad['pose']['position'] && pad['pose']['orientation']){
 			var pose = pad.pose;
 
 			//grip
-			if (!pad['lastPosition']) {pad['lastPosition'] = pose['position']}
-			if (!pad['lastOrientation']) {pad['lastOrientation'] = pose['orientation']}
-			var deltaPos = v3sub(pose['position'], pad['lastPosition']);
-			pad['deltaPosition'] = deltaPos
-			pad['lastPosition'] = pose['position'];
+			if (!right['lastPosition']) {right['lastPosition'] = pose['position']}
+			if (!right['lastOrientation']) {right['lastOrientation'] = pose['orientation']}
+			var deltaPos = v3sub(pose['position'], right['lastPosition']);
+			right['deltaPosition'] = deltaPos
+			right['lastPosition'] = pose['position'];
 
-			var deltaOrientation = QM(pose['orientation'],QI(pad['lastOrientation']))
+			var deltaOrientation = QM(pose['orientation'],QI(right['lastOrientation']))
 
-			pad['lastOrientation'] = pose['orientation'];
+			right['lastOrientation'] = pose['orientation'];
 
 			var mesh = Scene._sculptManager.getCurrentTool().getMesh();
 			var M = mesh._transformData._matrix;
@@ -211,22 +216,19 @@ var WEBVR = {
 			var S = Scene._mesh.scale
 
 			if (pad.buttons[2].pressed ) { 
-				if (!pad['gripPressed']){
-					pad['gripPressed'] = true;
+				if (!right['gripPressed']){
+					right['gripPressed'] = true;
 					gamepads[1]['distCache'] = v3dist(gamepads[1].pose.position, pose.position);
 
 					this.initialS = Scene._mesh.scale;
 				}
 				
-				if (gamepads[1] && gamepads[1]['gripPressed'] == true){
-					var initialDist = gamepads[1]['distCache'];
+				if (gamepads[1] && left['gripPressed'] == true){
+					var initialDist = left['distCache'];
 					var dist = v3dist(gamepads[1].pose.position, pose.position);
-					//console.log((dist / initialDist))
 					Scene._mesh.scale = this.initialS * (dist / initialDist);
 				}
 
-				// a * b * c
-				// mul(mul(a, b), c)
  				var rot = M4Q(M)
 				if (mesh){
 					mat4.fromRotationTranslationScale( M,	
@@ -237,8 +239,8 @@ var WEBVR = {
 						[S,S,S]);
 				}
 			} else {
-				if (pad['gripPressed']){
-					pad['gripPressed'] = false;
+				if (right['gripPressed']){
+					right['gripPressed'] = false;
 				}
 			}
 			
@@ -249,17 +251,16 @@ var WEBVR = {
 				 mat4.fromQuat(mat4.create(), pose.orientation));
 			Scene.onControllerMove(v3mult(pose.position, VRSCALE*30 ));
 
-			if (pad.buttons[1].touched) {
-				if (!pad['triggerPressed']){
-					pad['triggerPressed'] = true;
-					pad['strokeStartPosition'] = pad.pose.position
-					console.log("onControllerDown!")
+			if (pad.buttons[1].value > 0) {
+				if (!right['triggerPressed']){
+					right['triggerPressed'] = true;
+					right['strokeStartPosition'] = pad.pose.position
 					Scene.onControllerDown();
 				}
 			} else {
-				if (pad['triggerPressed']){
-					pad['triggerPressed'] = false;
-					console.log("onControllerUp!")
+				if (right['triggerPressed']){
+					right['triggerPressed'] = false;
+					console.log("onControllerUp!",+pad.buttons[1].value)
 					Scene.onControllerUp();
 				}
 			}
@@ -267,25 +268,25 @@ var WEBVR = {
 			Scene._sculptManager.getCurrentTool()._intensity = pad.buttons[1].value*0.8;
 
 			if (pad.buttons[0].pressed ) {
-				if (!pad['padPressed']){
-					pad['padPressed'] = true;
+				if (!right['padPressed']){
+					right['padPressed'] = true;
 					var neg = Scene._sculptManager.getCurrentTool()._negative;
 					Scene._sculptManager.getCurrentTool()._negative = !neg;
 				}
 			} else {
-				if (pad['padPressed']){
-					pad['padPressed'] = false;
+				if (right['padPressed']){
+					right['padPressed'] = false;
 				}
 			}
 
 			if (pad.buttons[3].pressed ) {
-				if (!pad['menuPressed']){
-					pad['menuPressed'] = true;
+				if (!right['menuPressed']){
+					right['menuPressed'] = true;
 					Scene._stateManager.redo()
 				}
 			} else {
-				if (pad['menuPressed']){
-					pad['menuPressed'] = false;
+				if (right['menuPressed']){
+					right['menuPressed'] = false;
 				}
 			}
 			
@@ -298,8 +299,8 @@ var WEBVR = {
 			var pose = pad.pose;
 
 			if (pad.buttons[0].pressed ) {
-				if (!pad['padPressed']){
-					pad['padPressed'] = true;
+				if (!left['padPressed']){
+					left['padPressed'] = true;
 					this.currentTool++;
 					if (this.currentTool >= this.tools.length)
 					{
@@ -309,46 +310,46 @@ var WEBVR = {
 					arrow._renderData._flatColor = this.toolColors[this.currentTool];
 				}
 			} else {
-				if (pad['padPressed']){
-					pad['padPressed'] = false;
+				if (left['padPressed']){
+					left['padPressed'] = false;
 				}
 			}
 
 			if (pad.buttons[1].touched ) {
-				if (!pad['triggerPressed']){
-					pad['triggerPressed'] = true;
-					pad['lastTool'] = Scene._sculptManager._toolIndex;
+				if (!left['triggerPressed']){
+					left['triggerPressed'] = true;
+					left['lastTool'] = Scene._sculptManager._toolIndex;
 					Scene._sculptManager._toolIndex = 3;
 					arrow._renderData._flatColor = [1,0,1];
 				}
 			} else {
-				if (pad['triggerPressed']){
-					pad['triggerPressed'] = false;
-					Scene._sculptManager._toolIndex = pad['lastTool'];
+				if (left['triggerPressed']){
+					left['triggerPressed'] = false;
+					Scene._sculptManager._toolIndex = left['lastTool'];
 					arrow._renderData._flatColor = this.toolColors[this.currentTool];
 				}
 			}
 			if (pad.buttons[3].pressed ) {
-				if (!pad['menuPressed']){
-					pad['menuPressed'] = true;
+				if (!left['menuPressed']){
+					left['menuPressed'] = true;
 					Scene._stateManager.undo()
 				}
 			} else {
-				if (pad['menuPressed']){
-					pad['menuPressed'] = false;
+				if (left['menuPressed']){
+					left['menuPressed'] = false;
 				}
 			}
 
 			if (pad.buttons[2].pressed ) { 
-				if (!pad['gripPressed']){
-					pad['gripPressed'] = true;
+				if (!left['gripPressed']){
+					left['gripPressed'] = true;
 					// cache controller position
-					pad['distCache'] = v3dist(gamepads[0].pose.position, pose.position);
+					left['distCache'] = v3dist(gamepads[0].pose.position, pose.position);
 					this.initialS = Scene._mesh.scale;
 				}
 			} else {
-				if (pad['gripPressed']){
-					pad['gripPressed'] = false;
+				if (left['gripPressed']){
+					left['gripPressed'] = false;
 				}
 			}
 			 
