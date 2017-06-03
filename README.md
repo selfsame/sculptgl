@@ -1,7 +1,7 @@
 SculptGL (VR) - WebGL sculpting
 ==========================
 
-A fork of [https://github.com/stephomi/sculptgl](https://github.com/stephomi/sculptgl) adapted for webVR
+A fork of [sculptgl](https://github.com/stephomi/sculptgl) adapted for webVR
 
 This is under development, but usable.  A build is up at [http://selfsamegames.com/sculptglvr](http://selfsamegames.com/sculptglvr)
 
@@ -30,6 +30,16 @@ Vive controls
 
 Tools
 =====
+
+* red - brush
+* green - inflate
+* blue - flatten
+* yellow - pinch
+* cyan - crease
+* black - move
+
+Dev
+====
 
 Install [nodejs](http://nodejs.org/).
 
