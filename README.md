@@ -1,6 +1,16 @@
 SculptGL (VR) - WebGL sculpting
 ==========================
 
+A fork of [https://github.com/stephomi/sculptgl](https://github.com/stephomi/sculptgl) adapted for webVR
+
+This is under development, but usable.  A build is up at [http://selfsamegames.com/sculptglvr](http://selfsamegames.com/sculptglvr)
+
+You need a browser that supports webVR ([https://webvr.rocks/](https://webvr.rocks/)).
+
+Currently only tested with HTC Vive (other headsets should work but probably don't have all the controlls mapped)
+
+No visual user interface, see controlls below, and use the html UI for other operations.
+
 Vive controls
 =============
 

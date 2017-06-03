@@ -121,7 +121,11 @@ class Move extends SculptBase {
     var cx = center[0];
     var cy = center[1];
     var cz = center[2];
-    var dir = moveData.dir;
+    //var dir = moveData.dir;
+
+    var dir = WEBVR.rightOffset(mesh)
+
+
     var dirx = dir[0];
     var diry = dir[1];
     var dirz = dir[2];

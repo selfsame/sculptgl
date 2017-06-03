@@ -28,6 +28,7 @@
 
 - [ ] move tool
 	- [ ] rewrite from [x,y] mouse delta to pad position delta
+		- [ ] store stroke initial position, Move dir is delta from start?
 
 ## ui
 - [ ] transform/mesh scenegraph node

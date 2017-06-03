@@ -167,6 +167,25 @@ var WEBVR = {
 		return [0,0,0]
 	},
 
+	getRightDeltaPosition(){
+		if (gamepads[0] && gamepads[0]['deltaPosition'] && gamepads[0]['strokeStartPosition']){
+			return v3sub(gamepads[0]['pose']['position'], gamepads[0]['strokeStartPosition'])
+		}
+		return [0,0.01,0]
+	},
+
+	rightOffset(mesh){
+		var M = mesh.getMatrix()
+    var matInverse = mat4.create();
+    var IP = Scene._picking._interPoint
+    
+    mat4.invert(matInverse, mesh.getMatrix())
+    //var V = vec3.transformMat4([0,0,0], this.getRightDeltaPosition(), matInverse)
+    //return v3sub(IP, V)
+    var V = this.getRightDeltaPosition()
+    return V
+	},
+
 	updateGamepads: function(delta){
 		var pad = gamepads[0];
 		if (pad && pad['pose']['position'] && pad['pose']['orientation']){
@@ -176,6 +195,7 @@ var WEBVR = {
 			if (!pad['lastPosition']) {pad['lastPosition'] = pose['position']}
 			if (!pad['lastOrientation']) {pad['lastOrientation'] = pose['orientation']}
 			var deltaPos = v3sub(pose['position'], pad['lastPosition']);
+			pad['deltaPosition'] = deltaPos
 			pad['lastPosition'] = pose['position'];
 
 			var deltaOrientation = QM(pose['orientation'],QI(pad['lastOrientation']))
@@ -232,11 +252,14 @@ var WEBVR = {
 			if (pad.buttons[1].touched) {
 				if (!pad['triggerPressed']){
 					pad['triggerPressed'] = true;
+					pad['strokeStartPosition'] = pad.pose.position
+					console.log("onControllerDown!")
 					Scene.onControllerDown();
 				}
 			} else {
 				if (pad['triggerPressed']){
 					pad['triggerPressed'] = false;
+					console.log("onControllerUp!")
 					Scene.onControllerUp();
 				}
 			}
