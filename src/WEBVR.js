@@ -1,12 +1,15 @@
-/**
- * @author mrdoob / http://mrdoob.com
- * Based on @tojiro's vr-samples-utils.js
- */
+
+import Primitives from './drawables/Primitives';
+import Enums from './misc/Enums';
 
 window.VRSCALE = 160;
 
 var v3mult = function(A, n){
 	return [A[0]*n,A[1]*n,A[2]*n];
+}
+
+var v3times = function(A, n){
+  return [A[0]*n[0],A[1]*n[1],A[2]*n[2]];
 }
 
 var v3plus = function(A, B){
@@ -35,6 +38,22 @@ var qinverse = function(Q) {
       return [-x * normSq, -y * normSq, -z * normSq, w * normSq];
 }
 
+var getScaling = function (out, mat) {
+  var m11 = mat[0],
+      m12 = mat[1],
+      m13 = mat[2],
+      m21 = mat[4],
+      m22 = mat[5],
+      m23 = mat[6],
+      m31 = mat[8],
+      m32 = mat[9],
+      m33 = mat[10];
+  out[0] = Math.sqrt(m11 * m11 + m12 * m12 + m13 * m13);
+  out[1] = Math.sqrt(m21 * m21 + m22 * m22 + m23 * m23);
+  out[2] = Math.sqrt(m31 * m31 + m32 * m32 + m33 * m33);
+  return out;
+};
+
 
 var QM = function(A, B){return quat.mul([0,0,0,0],A,B)}
 var QI = function(A){return quat.invert([0,0,0,0],A)}
@@ -47,11 +66,11 @@ var WEBVR = {
 	eyedims: [1512,1680],
 	eyeoffset: 3,
 	layer: null,
-	tools: [0,1,4,5,6],
-	toolColors: [[1,0,0],[0,1,0],[0,0,1],[1,1,0],[0,1,1]],
+	tools: [0,9,1,4,5,6],
+	toolColors: [[1,0,0],[0,0,0],[0,1,0],[0,0,1],[1,1,0],[0,1,1]],
 	currentTool: 0,
-	S: 1,
-	initialS: 1,
+	initialS: [1,1,1],
+	debug_point: null,
 
 	init: function () {
 		navigator.getVRDisplays().then(this.vrinit.bind(this));
@@ -78,7 +97,33 @@ var WEBVR = {
 		this.display.requestAnimationFrame(this.update.bind(this));
 		window.pose = {position: [0, 0, 0.5], orientation:[ 0, 0, 0, 1 ]}
 		Scene._sculptManager.getCurrentTool().getMesh()._renderData._curvature = 3;
+		this.debug_point = this.make_point(Scene._gl, [0,1,1])
 	},
+
+  make_point(gl, color){
+    var point = Primitives.createCube(gl);
+    var pointm = point.getMatrix(); 
+    var scale = 0.8;
+    mat4.scale(pointm, pointm, [scale, scale, scale]);
+    point.setShaderType(Enums.Shader.NORMAL); //WIREFRAME
+    point.setFlatColor(color);
+    return point
+  },
+
+  set_position(M, V){
+    //mat4.identity(M)
+    var offset = mat4.getTranslation([0,0,0], M)
+    mat4.fromTranslation(M, V)
+  },
+
+  scaled_position(mesh, V){
+    var M = scene._mesh._transformData._matrix
+    var S = getScaling([0,0,0], M)
+    var gridm = mesh.getMatrix()
+    this.set_position(gridm, v3times(V, S))
+    mat4.scale(gridm, gridm, [0.4,0.4,0.4])
+  },
+
 	updateEye: function(n){
 		if (window['pose'] && window['pose']['position']) {
 			if (window['frameData']){
@@ -102,6 +147,26 @@ var WEBVR = {
 			}
 		} 
 	},
+
+	debugScale: function(){
+		var mesh = Scene._sculptManager.getCurrentTool().getMesh();
+		var M = mesh._transformData._matrix;
+		console.log(mat4.getScale([0,0,0], M));
+	},
+
+	resetMesh: function(mesh){
+		var M = mesh._transformData._matrix
+		var S = Scene._mesh.scale
+		mat4.fromRotationTranslationScale(M, quat.create(), [0,0,0], [S,S,S])
+	},
+
+	getRightPosition(){
+		if (gamepads[0] && gamepads[0]['pose']['position']){
+			return gamepads[0]['pose']['position']
+		}
+		return [0,0,0]
+	},
+
 	updateGamepads: function(delta){
 		var pad = gamepads[0];
 		if (pad && pad['pose']['position'] && pad['pose']['orientation']){
@@ -116,23 +181,28 @@ var WEBVR = {
 			var deltaOrientation = QM(pose['orientation'],QI(pad['lastOrientation']))
 
 			pad['lastOrientation'] = pose['orientation'];
-			Scene._sculptManager.getCurrentTool().getMesh()
+
 			var mesh = Scene._sculptManager.getCurrentTool().getMesh();
 			var M = mesh._transformData._matrix;
+			
+			if (Scene._mesh.scale == null){
+				Scene._mesh.scale = mat4.getScale([0,0,0], M)[0]
+			}
+			var S = Scene._mesh.scale
 
 			if (pad.buttons[2].pressed ) { 
-
 				if (!pad['gripPressed']){
 					pad['gripPressed'] = true;
 					gamepads[1]['distCache'] = v3dist(gamepads[1].pose.position, pose.position);
-					this.initialS = this.S;
-				}
 
+					this.initialS = Scene._mesh.scale;
+				}
+				
 				if (gamepads[1] && gamepads[1]['gripPressed'] == true){
-					//console.log(mat4.getScale([0,0,0], M));
 					var initialDist = gamepads[1]['distCache'];
 					var dist = v3dist(gamepads[1].pose.position, pose.position);
-					this.S = (dist / initialDist)*this.initialS;
+					//console.log((dist / initialDist))
+					Scene._mesh.scale = this.initialS * (dist / initialDist);
 				}
 
 				// a * b * c
@@ -144,7 +214,7 @@ var WEBVR = {
 						v3plus(
 							mat4.getTranslation([0,0,0], M), 
 							v3mult(deltaPos, VRSCALE)),
-						[60*this.S,60*this.S,60*this.S]);
+						[S,S,S]);
 				}
 			} else {
 				if (pad['gripPressed']){
@@ -159,7 +229,7 @@ var WEBVR = {
 				 mat4.fromQuat(mat4.create(), pose.orientation));
 			Scene.onControllerMove(v3mult(pose.position, VRSCALE*30 ));
 
-			if (pad.buttons[1].pressed) {
+			if (pad.buttons[1].touched) {
 				if (!pad['triggerPressed']){
 					pad['triggerPressed'] = true;
 					Scene.onControllerDown();
@@ -171,7 +241,7 @@ var WEBVR = {
 				}
 			}
 
-			Scene._sculptManager.getCurrentTool()._intensity = pad.buttons[1].value;
+			Scene._sculptManager.getCurrentTool()._intensity = pad.buttons[1].value*0.8;
 
 			if (pad.buttons[0].pressed ) {
 				if (!pad['padPressed']){
@@ -221,7 +291,7 @@ var WEBVR = {
 				}
 			}
 
-			if (pad.buttons[1].pressed ) {
+			if (pad.buttons[1].touched ) {
 				if (!pad['triggerPressed']){
 					pad['triggerPressed'] = true;
 					pad['lastTool'] = Scene._sculptManager._toolIndex;
@@ -251,7 +321,7 @@ var WEBVR = {
 					pad['gripPressed'] = true;
 					// cache controller position
 					pad['distCache'] = v3dist(gamepads[0].pose.position, pose.position);
-					this.initialS = this.S;
+					this.initialS = Scene._mesh.scale;
 				}
 			} else {
 				if (pad['gripPressed']){
@@ -261,6 +331,7 @@ var WEBVR = {
 			 
 		}
 	},
+
 	update: function(delta){
 		this.display.requestAnimationFrame(this.update.bind(this));
 		if (this.display.isPresenting) {
@@ -283,14 +354,17 @@ var WEBVR = {
 		}
 		return [[0,0,0],[0,0,0]];
 	},
+
 	controllerDistance: function(v){
 		var mesh = Scene._sculptManager.getCurrentTool().getMesh();
 		var M = mesh._transformData._matrix;
-		v = v3plus(v, mat4.getTranslation([0,0,0], M));
+		v = vec3.transformMat4([0,0,0], v, M)
+		
+		//this.set_position(WEBVR.debug_point._transformData._matrix, v)
 		var pad = gamepads[0];
 		if (pad){
-			var dist = (v3dist(v, v3mult(pad.pose.position, VRSCALE))*0.1)/this.S;
-			return Math.max(((dist*dist)-7), 0.1);
+			var dist = (v3dist(v, v3mult(pad.pose.position, VRSCALE))*0.1)/1;
+			return Math.max((dist*dist), 0.1);
 		}
 		return 1;
 	},

@@ -272,6 +272,9 @@ var prepareMeshes = function (meshes) {
 };
 
 Remesh.remesh = function (meshes, baseMesh) {
+  //selfsame
+  WEBVR.resetMesh(Scene._mesh)
+  
   console.time('remesh total');
 
   console.time('1. initMeshes');

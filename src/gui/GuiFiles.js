@@ -36,8 +36,13 @@ class GuiFiles {
     document.getElementById('fileopen').click();
   }
 
+  presave(){
+    WEBVR.resetMesh(Scene._mesh)
+  }
+
   saveFileAsSGL() {
     if (this._main.getMeshes().length === 0) return;
+    this.presave()
     var blob = Export.exportSGL(this._main.getMeshes(), this._main);
     saveAs(blob, 'yourMesh.sgl');
   }
@@ -45,6 +50,7 @@ class GuiFiles {
   saveFileAsOBJ(selection) {
     var meshes = this._main.getMeshes();
     if (meshes.length === 0) return;
+    this.presave()
     if (selection) {
       meshes = this._main.getSelectedMeshes();
       if (!meshes[0]) return;
@@ -56,6 +62,7 @@ class GuiFiles {
   saveFileAsPLY() {
     var mesh = this._main.getMesh();
     if (!mesh) return;
+    this.presave()
     var blob = Export.exportBinaryPLY(mesh);
     saveAs(blob, 'yourMesh.ply');
   }
@@ -63,6 +70,7 @@ class GuiFiles {
   saveFileAsSTL() {
     var mesh = this._main.getMesh();
     if (!mesh) return;
+    this.presave()
     var blob = Export.exportBinarySTL(mesh);
     saveAs(blob, 'yourMesh.stl');
   }

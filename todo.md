@@ -13,18 +13,21 @@
 	- [x] SculptBase.preUpdate calls Picking fns with controller ray 
 	- [x] Route controller trigger to onDeviceDown
 - [ ] show ray visual
-- [/] ray distance to brush size
-- [/] use trigger sensitivity
+- [x] ray distance to brush size
+- [x] use trigger sensitivity
 - [ ] prevent out of control tool updates (large radius, wonky geom, updating every frame)
-- [/] grip buttons
+- [x] grip buttons
 	- [x] translate model
-	- [ ] relative rotation
-	- [ ] double scales model
+	- [x] relative rotation
+	- [x] double scales model
 
 - [x] delta rotation
 	- [x] can't seem to reconstruct model matrix when using M.getRotation()
 	 oh ffs https://github.com/toji/gl-matrix/issues/245
 	- [x] need to take relative controller position into account
+
+- [ ] move tool
+	- [ ] rewrite from [x,y] mouse delta to pad position delta
 
 ## ui
 - [ ] transform/mesh scenegraph node
@@ -36,6 +39,12 @@
 - [ ] detect vr and if not supported show message (or adapt WEBVR.js)
 
 ## bugs
-- [ ] scaled meshes mess thing up
+- [x] scaled meshes mess thing up
 - [ ] can undo when no more history
 - [ ] 2 grip scaling initial value needs to reset when one is unpressed
+
+- [x] WEBVR.ControllerDistance needs to get distance to picking intersect
+
+- [/] remesh / save needs to normalize mesh
+	- [ ] preserve transform?
+	- [ ] normalize multiple meshes for save

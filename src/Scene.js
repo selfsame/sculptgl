@@ -319,6 +319,11 @@ class Scene {
       arrow.renderFlatColor(this);
     }
 
+    if (WEBVR["debug_point"]){
+      WEBVR.debug_point.updateMatrices(this._camera)
+      WEBVR.debug_point.renderFlatColor(this);
+    }
+
     var startTransparent = i;
     if (this._meshPreview) this._meshPreview.render(this);
 
