@@ -8,6 +8,10 @@ var v3mult = function(A, n){
 	return [A[0]*n,A[1]*n,A[2]*n];
 }
 
+var v3div = function(A, n){
+	return [A[0]/n[0],A[1]/n[1],A[2]/n[2]];
+}
+
 var v3times = function(A, n){
   return [A[0]*n[0],A[1]*n[1],A[2]*n[2]];
 }
@@ -185,7 +189,9 @@ var WEBVR = {
     //var V = vec3.transformMat4([0,0,0], this.getRightDeltaPosition(), matInverse)
     //return v3sub(IP, V)
     var V = this.getRightDeltaPosition()
-    //mat4.getScale([0,0,0], M)
+    var S = mat4.getScale([0,0,0], Scene._mesh._transformData._matrix)
+    S = v3div([60,60,60],S)
+    //V = v3times(V,S)
     return v3times(vec3.transformQuat(V, V, M4Q(matInverse)), [2,2,2])
 	},
 
@@ -297,6 +303,12 @@ var WEBVR = {
 		var pad = gamepads[1];
 		if (pad && pad['pose']['position']){
 			var pose = pad.pose;
+
+			mat4.mul(
+				this.debug_point._transformData._matrix,
+				mat4.fromTranslation(this.debug_point._transformData._matrix,
+					v3mult(pose.position, VRSCALE)),
+				 mat4.fromQuat(mat4.create(), pose.orientation));
 
 			if (pad.buttons[0].pressed ) {
 				if (!left['padPressed']){
