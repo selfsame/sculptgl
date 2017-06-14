@@ -11,7 +11,8 @@ This is under development, but usable.
 
 You need a browser that supports webVR ([https://webvr.rocks/](https://webvr.rocks/)).
 
-Currently only tested with HTC Vive (other headsets should work but probably don't have all the controlls mapped)
+Currently only tested with HTC Vive 
+(If you have a Rift I'm looking for contributors to help sort out issues) 
 
 No visual user interface, see controlls below, and use the html UI for other operations.
 
