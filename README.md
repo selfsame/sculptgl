@@ -11,8 +11,8 @@ This is under development, but usable.
 
 You need a browser that supports webVR ([https://webvr.rocks/](https://webvr.rocks/)).
 
-Currently only tested with HTC Vive 
-(If you have a Rift I'm looking for contributors to help sort out issues) 
+works with HTC Vive and Oculus touch 
+
 
 No visual user interface, see controlls below, and use the html UI for other operations.
 
@@ -32,6 +32,23 @@ Vive controls
 * left pad click - cycle tool (tool displayed with cursor color)
 * left grip - scale mesh when combined with right grip
 * left steam button - undo
+
+Oculus controls
+===============
+
+## Right Controller: cursor projects to mesh
+
+* X - undo
+* right trigger - sculpt
+* right grip - move mesh
+* right stick click - toggle invert
+
+## Left Controller:
+
+* A - redo
+* left stick click - cycle tool
+* left trigger - quick smooth tool
+* left grip - scale mesh when combined with right grip
 
 Tools
 =====
