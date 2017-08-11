@@ -167,15 +167,15 @@ var WEBVR = {
 	},
 
 	getRightPosition(){
-		if (gamepads[0] && gamepads[0]['pose']['position']){
-			return gamepads[0]['pose']['position']
+		if (gamepads[1] && gamepads[1]['pose']['position']){
+			return gamepads[1]['pose']['position']
 		}
 		return [0,0,0]
 	},
 
 	getRightDeltaPosition(){
-		if (gamepads[0] && this.right['deltaPosition'] && this.right['strokeStartPosition']){
-			return v3sub(gamepads[0]['pose']['position'], this.right['strokeStartPosition'])
+		if (gamepads[1] && this.right['deltaPosition'] && this.right['strokeStartPosition']){
+			return v3sub(gamepads[1]['pose']['position'], this.right['strokeStartPosition'])
 		}
 		return [0,0.01,0]
 	},
@@ -198,10 +198,9 @@ var WEBVR = {
 	updateGamepads: function(delta){
 		var right = this.right
 		var left = this.left
-		var pad = gamepads[0];
+		var pad = gamepads[1];
 		if (pad && pad['pose']['position'] && pad['pose']['orientation']){
 			var pose = pad.pose;
-
 			//grip
 			if (!right['lastPosition']) {right['lastPosition'] = pose['position']}
 			if (!right['lastOrientation']) {right['lastOrientation'] = pose['orientation']}
@@ -214,6 +213,7 @@ var WEBVR = {
 			right['lastOrientation'] = pose['orientation'];
 
 			var mesh = Scene._sculptManager.getCurrentTool().getMesh();
+			if (!mesh){return}
 			var M = mesh._transformData._matrix;
 			
 			if (Scene._mesh.scale == null){
@@ -224,15 +224,15 @@ var WEBVR = {
 			if (pad.buttons[2].pressed ) { 
 				if (!right['gripPressed']){
 					right['gripPressed'] = true;
-					if (gamepads[1] && gamepads[1]['pose']['position']) {
-						left['distCache'] = v3dist(gamepads[1].pose.position, pose.position)
+					if (gamepads[0] && gamepads[0]['pose']['position']) {
+						left['distCache'] = v3dist(gamepads[0].pose.position, pose.position)
 					}
 					this.initialS = Scene._mesh.scale;
 				}
 				
-				if (gamepads[1] && left['gripPressed'] == true){
+				if (gamepads[0] && left['gripPressed'] == true){
 					var initialDist = left['distCache'];
-					var dist = v3dist(gamepads[1].pose.position, pose.position);
+					var dist = v3dist(gamepads[0].pose.position, pose.position);
 					Scene._mesh.scale = this.initialS * (dist / initialDist);
 				}
 
@@ -255,11 +255,13 @@ var WEBVR = {
 				arrow._transformData._matrix,
 				mat4.fromTranslation(arrow._transformData._matrix,
 					v3mult(pose.position, VRSCALE)),
-				 mat4.fromQuat(mat4.create(), pose.orientation));
+				 mat4.fromQuat(mat4.create(), pose.orientation ));
+			
 			Scene.onControllerMove(v3mult(pose.position, VRSCALE*30 ));
 
-			if (pad.buttons[1].value > 0) {
+			if (pad.buttons[1].value > 0.00001) {
 				if (!right['triggerPressed']){
+
 					right['triggerPressed'] = true;
 					right['strokeStartPosition'] = pad.pose.position
 					Scene.onControllerDown();
@@ -300,7 +302,7 @@ var WEBVR = {
 
 		//////////////////////////////////////////////
 
-		var pad = gamepads[1];
+		var pad = gamepads[0];
 		if (pad && pad['pose']['position']){
 			var pose = pad.pose;
 
@@ -327,7 +329,7 @@ var WEBVR = {
 				}
 			}
 
-			if (pad.buttons[1].touched ) {
+			if (pad.buttons[1].pressed ) {
 				if (!left['triggerPressed']){
 					left['triggerPressed'] = true;
 					left['lastTool'] = Scene._sculptManager._toolIndex;
@@ -356,7 +358,7 @@ var WEBVR = {
 				if (!left['gripPressed']){
 					left['gripPressed'] = true;
 					// cache controller position
-					left['distCache'] = v3dist(gamepads[0].pose.position, pose.position);
+					left['distCache'] = v3dist(gamepads[1].pose.position, pose.position);
 					this.initialS = Scene._mesh.scale;
 				}
 			} else {
@@ -397,7 +399,7 @@ var WEBVR = {
 		v = vec3.transformMat4([0,0,0], v, M)
 		
 		//this.set_position(WEBVR.debug_point._transformData._matrix, v)
-		var pad = gamepads[0];
+		var pad = gamepads[1];
 		if (pad){
 			var dist = (v3dist(v, v3mult(pad.pose.position, VRSCALE))*0.1)/1;
 			return Math.max((dist*dist), 0.1);

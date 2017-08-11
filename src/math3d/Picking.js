@@ -157,7 +157,7 @@ class Picking {
 
   /** Intersection between a ray the mouse position for every meshes */
   intersectionMouseMeshes(meshes = this._main.getMeshes(), mouseX = this._main._mouseX, mouseY = this._main._mouseY) {
-    var cray = WEBVR.controllerRay(0);
+    var cray = WEBVR.controllerRay(1);
     var vNear = cray[0];
     var vFar = cray[1];
     var nearDistance = Infinity;
@@ -193,7 +193,7 @@ class Picking {
   /** Intersection between a ray the mouse position */
   // intersectionMouseMesh(mesh, mouseX, mouseY) {
   intersectionMouseMesh(mesh = this._main.getMesh(), mouseX = this._main._mouseX, mouseY = this._main._mouseY) {
-    var cray = WEBVR.controllerRay(0);
+    var cray = WEBVR.controllerRay(1);
     var vNear = cray[0];
     var vFar = cray[1];
     var matInverse = mat4.create();
